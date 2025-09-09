@@ -1,12 +1,26 @@
-// server/db.js
-import mysql from 'mysql2/promise';
+// db.js
+import pkg from 'pg';
+const { Pool } = pkg;
 
-export const pool = mysql.createPool({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,   // << ใช้ DB_PASSWORD ให้ตรง .env
-  database: process.env.DB_NAME,
-  // ssl: { rejectUnauthorized: true }  // เปิดเฉพาะตอนใช้ PlanetScale/Cloud DB
-  waitForConnections: true,
-  connectionLimit: 10,
+const connectionString =
+  process.env.DATABASE_URL ||
+  process.env.POSTGRES_URL ||
+  process.env.POSTGRES_CONNECTION_STRING;
+
+export const pool = new Pool({
+  connectionString,
+  ssl: { rejectUnauthorized: false }, // Render ต้องใช้ SSL
 });
+
+// wrapper สำหรับ query
+export const query = (text, params) => pool.query(text, params);
+
+// (optional) function ทดสอบการเชื่อมต่อ
+export async function testDB() {
+  try {
+    const res = await query('SELECT NOW()'); // ใช้ query ตรงๆ
+    console.log('✅ DB Connected:', res.rows[0]);
+  } catch (err) {
+    console.error('❌ DB Connection failed:', err.message);
+  }
+}

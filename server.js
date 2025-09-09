@@ -20,6 +20,11 @@ const app = express();
 // middleware
 app.use(cors());
 app.use(express.json());
+// server.js
+app.get('/', (_req, res) => {
+  res.send('Computer Repair API is running. See /api/v1/health');
+});
+
 
 // routes
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
